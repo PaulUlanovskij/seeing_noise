@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <script type="module">
+    import init from "./pkg/seeing_noise.js";
+    init();
+    </script>
+
+    <div class="left-column">
+      <h1>Interactive Procedural Noise Visualizer</h1>
+
+      <div class="input-group">
+        <label>Select a noise type</label>
+        <select id="noise_select">
+          <option disabled selected> -- select a noise  -- </option>
+          <option value="perlin">Perlin</option>
+          <option value="simplex">Simplex</option>
+          <option value="wavelet">Wavelet</option>
+          <option value="gabor">Gabor</option>
+          <option value="anisotropic">Anisotropic</option>
+          <option value="worley">Worley</option>
+        </select>
+      </div>
+
+      <div id="simplex_noise" hidden>
+        <h2>Simplex noise</h2>
+        <p class="text-block">          
+          Simplex noise is an improved variant of Perlin noise, also created by Ken Perlin. It uses a simpler geometric structure based on simplexes (triangular grids) instead of hypercubes, making it computationally faster and more efficient—especially in higher dimensions. Simplex noise produces smoother, more isotropic results with fewer directional artifacts than Perlin noise. It's widely used in modern game engines, terrain generation, and procedural textures because it combines better visual quality with superior performance. The algorithm is particularly effective for creating natural-looking features like clouds, mountains, and water surfaces while maintaining smooth gradients throughout the noise field.
+        </p>
+
+        <div class="input-group">
+          <div class="radio-group">
+            <label>Final
+              <input type="radio" id="simplex_full" name="simplex_coloring" checked=true>
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows the final combined noise result with all octaves and coloring applied</div>
+              </div>
+            </label>
+            <label>Dot products
+              <input type="radio" id="simplex_dot_products" name="simplex_coloring">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Visualizes the raw dot products between gradient vectors and distance vectors before interpolation</div>
+              </div>
+            </label>
+            <label>None
+              <input type="radio" id="simplex_none" name="simplex_coloring">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays uncolored raw noise values for analysis</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="checkbox-group">
+            <label>Show Grid
+              <input type="checkbox" id="simplex_show_grid">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the underlying simplex grid structure used for noise calculation</div>
+              </div>
+            </label>
+            <label>Show Vectors
+              <input type="checkbox" id="simplex_show_vectors">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows gradient vectors at each grid point that influence the noise direction</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="slider-container">
+            <div class="slider-group">
+              <label>Seed:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Initial value that determines the random number sequence. Different seeds produce different noise patterns while keeping other parameters constant.</div>
+                </div>
+              </label>
+              <input type="range" id="simplex_seed" min="0" max="1000" value="42">
+              <div class="slider-value" id="simplex_seed_display">42</div>
+            </div>
+            <div class="slider-group">
+              <label>Scale:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the zoom level of the noise. Lower values show more detail (zoomed in), higher values show larger patterns (zoomed out).</div>
+                </div>
+              </label>
+              <input type="range" id="simplex_scale" min="10" max="200" value="50" step="0.5">
+              <div class="slider-value" id="simplex_scale_display">50.0</div>
+            </div>
+            <div class="slider-group">
+              <label>Octaves:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Number of noise layers combined. Each octave adds higher frequency detail. More octaves create more complex, realistic patterns.</div>
+                </div>
+              </label>
+              <input type="range" id="simplex_octaves" min="1" max="8" value="4">
+              <div class="slider-value" id="simplex_octaves_display">4</div>
+            </div>
+            <div class="slider-group">
+              <label>Persistence:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">How much each octave contributes to the final shape. Higher values make higher frequency octaves more prominent, creating rougher noise.</div>
+                </div>
+              </label>
+              <input type="range" id="simplex_persistence" min="0.0" max="1.0" value="0.5" step="0.1">
+              <div class="slider-value" id="simplex_persistence_display">0.5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="perlin_noise" hidden>
+        <h2>Perlin noise</h2>
+        <p class="text-block">          
+          Perlin noise is a type of gradient noise used to generate natural-looking, smooth randomness. Unlike pure random values that jump erratically, Perlin noise produces coherent patterns that vary gradually across space, making it ideal for creating organic textures like clouds, terrain, and marble. It was invented by Ken Perlin in 1983 and has become a fundamental tool in computer graphics, game development, and procedural generation. The noise is created by interpolating random gradients at regular intervals, resulting in smooth transitions that feel lifelike rather than purely chaotic.
+        </p>
+
+        <div class="input-group">
+          <div class="radio-groups-container">
+            <div class="radio-group">
+              <label>Final
+                <input type="radio" id="perlin_final" name="perlin_visualization" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Displays the complete multi-octave Perlin noise result with all processing applied</div>
+                </div>
+              </label>
+              <label>Single octave
+                <input type="radio" id="perlin_single_octave" name="perlin_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows only one octave of noise, useful for understanding the basic Perlin noise structure</div>
+                </div>
+              </label>
+              <label>Accumulated octaves
+                <input type="radio" id="perlin_accumulated_octaves" name="perlin_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows how noise complexity builds up as each octave is added to the previous ones</div>
+                </div>
+              </label>
+            </div>
+            <div class="radio-group">
+              <label>Standard
+                <input type="radio" id="perlin_standard" name="perlin_noise_type" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Classic Perlin noise with smooth interpolation between gradient values</div>
+                </div>
+              </label>
+              <label>Turbulence
+                <input type="radio" id="perlin_turbulence" name="perlin_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Absolute value of noise creating sharp ridges and valleys, useful for cloud formations and marble veins</div>
+                </div>
+              </label>
+              <label>Ridge
+                <input type="radio" id="perlin_ridge" name="perlin_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Inverted and scaled noise that creates mountain ridge-like patterns</div>
+                </div>
+              </label>
+              <label>Domain Warp
+                <input type="radio" id="perlin_domain_warp" name="perlin_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Applies noise to distort the input coordinates, creating swirling, organic patterns</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="checkbox-group">
+            <label>Show Grid
+              <input type="checkbox" id="perlin_show_grid">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the underlying integer grid where gradient vectors are defined</div>
+              </div>
+            </label>
+            <label>Show Dot Products
+              <input type="checkbox" id="perlin_show_dot_products">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Visualizes the dot products between gradient vectors and distance vectors before interpolation</div>
+              </div>
+            </label>
+            <label>Show Vectors
+              <input type="checkbox" id="perlin_show_vectors">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows the random gradient vectors assigned to each grid point</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="slider-container">
+            <div class="slider-group" id="perlin_seed_control">
+              <label>Seed:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Initial random number generator seed. Different seeds create completely different noise patterns while maintaining the same characteristics.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_seed" min="0" max="1000">
+              <div class="slider-value" id="perlin_seed_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_scale_control">
+              <label>Scale:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the frequency of the base noise. Lower values = higher frequency (more detail), higher values = lower frequency (larger features).</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_scale" min="10" max="200" step="0.5">
+              <div class="slider-value" id="perlin_scale_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_octaves_control">
+              <label>Octaves:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Number of noise layers at different frequencies. Each octave adds higher frequency detail with reduced amplitude.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_octaves" min="1" max="8">
+              <div class="slider-value" id="perlin_octaves_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_lacunarity_control">
+              <label>Lacunarity:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Frequency multiplier between octaves. Higher values make each successive octave more detailed (higher frequency).</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_lacunarity" min="1.0" max="4.0" step="0.1">
+              <div class="slider-value" id="perlin_lacunarity_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_gain_control">
+              <label>Gain:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Amplitude multiplier between octaves (also called persistence). Controls how much each octave contributes to the final result.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_gain" min="0.0" max="1.0" step="0.05">
+              <div class="slider-value" id="perlin_gain_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_h_exponent_control">
+              <label>H Exponent:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Fractal dimension parameter. Controls the roughness of the fractal noise. Lower values = smoother, higher values = rougher.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_h_exponent" min="0.0" max="2.0" step="0.1">
+              <div class="slider-value" id="perlin_h_exponent_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_ridge_offset_control">
+              <label>Ridge Offset:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shifts the noise values before applying ridge transformation. Affects the thickness and spacing of ridges.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_ridge_offset" min="0.0" max="2.0" step="0.1">
+              <div class="slider-value" id="perlin_ridge_offset_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_warp_amount_control">
+              <label>Warp Amount:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Strength of the domain warping effect. Higher values create more dramatic distortions and swirling patterns.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_warp_amount" min="0.0" max="10.0" step="0.5">
+              <div class="slider-value" id="perlin_warp_amount_display"></div>
+            </div>
+            <div class="slider-group" id="perlin_show_octave_control">
+              <label>Show octave:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Selects which specific octave to display when using single octave or accumulated octaves visualization modes.</div>
+                </div>
+              </label>
+              <input type="range" id="perlin_show_octave" min="1" max="8">
+              <div class="slider-value" id="perlin_show_octave_display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="wavelet_noise" hidden>
+        <h2>Wavelet noise</h2>
+        <p class="text-block">          
+          Wavelet noise is an advanced procedural noise function that improves upon classic Perlin noise by offering a more uniform distribution of frequencies. This key characteristic eliminates visible grid artifacts and provides superior control over the texture's spectral content, resulting in more organic and less repetitive patterns.
+          Its primary use is in high-end computer graphics for generating realistic natural phenomena. It is especially valuable for adding fine, turbulent details to fluid simulations like smoke and fire, as well as for creating detailed procedural textures and terrains where control over both broad features and sharp details is essential.
+        </p>
+        <div class="input-group">
+          <div class="radio-groups-container">
+            <div class="radio-group">
+              <label>Final
+                <input type="radio" id="wavelet_final" name="wavelet_visualization" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows the complete multi-octave wavelet noise result with all processing applied</div>
+                </div>
+              </label>
+              <label>Single octave
+                <input type="radio" id="wavelet_single_octave" name="wavelet_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Displays one octave of wavelet noise to show the base frequency structure</div>
+                </div>
+              </label>
+              <label>Accumulated octaves
+                <input type="radio" id="wavelet_accumulated_octaves" name="wavelet_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows how wavelet noise complexity builds up as each octave is added</div>
+                </div>
+              </label>
+            </div>
+            <div class="radio-group">
+              <label>Standard
+                <input type="radio" id="wavelet_standard" name="wavelet_noise_type" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Standard wavelet noise with smooth frequency distribution and minimal artifacts</div>
+                </div>
+              </label>
+              <label>Turbulence
+                <input type="radio" id="wavelet_turbulence" name="wavelet_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Absolute value of wavelet noise creating sharp, turbulent features</div>
+                </div>
+              </label>
+              <label>Ridge
+                <input type="radio" id="wavelet_ridge" name="wavelet_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Inverted wavelet noise that creates ridge-like patterns for terrain features</div>
+                </div>
+              </label>
+              <label>Domain Warp
+                <input type="radio" id="wavelet_domain_warp" name="wavelet_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Applies wavelet noise to distort the input coordinates for swirling patterns</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="checkbox-group">
+            <label>Show Grid
+              <input type="checkbox" id="wavelet_show_grid">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the underlying grid structure used for wavelet basis functions</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="slider-container">
+            <div class="slider-group" id="wavelet_seed_control">
+              <label>Seed:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Random seed for wavelet noise generation. Different seeds create different patterns while maintaining the same spectral characteristics.</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_seed" min="0" max="1000">
+              <div class="slider-value" id="wavelet_seed_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_scale_control">
+              <label>Scale:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the overall frequency of the wavelet noise. Lower values show more high-frequency detail.</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_scale" min="10" max="200" step="0.5">
+              <div class="slider-value" id="wavelet_scale_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_octaves_control">
+              <label>Octaves:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Number of wavelet noise layers at different frequencies combined for fractal noise</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_octaves" min="1" max="8">
+              <div class="slider-value" id="wavelet_octaves_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_lacunarity_control">
+              <label>Lacunarity:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Frequency multiplier between octaves. Controls how much the frequency increases for each successive octave.</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_lacunarity" min="1.0" max="4.0" step="0.1">
+              <div class="slider-value" id="wavelet_lacunarity_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_gain_control">
+              <label>Gain:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Amplitude multiplier between octaves. Controls how much each successive octave contributes to the final result.</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_gain" min="0.0" max="1.0" step="0.05">
+              <div class="slider-value" id="wavelet_gain_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_h_exponent_control">
+              <label>H Exponent:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Fractal dimension parameter that controls the roughness of the wavelet noise</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_h_exponent" min="0.0" max="2.0" step="0.1">
+              <div class="slider-value" id="wavelet_h_exponent_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_ridge_offset_control">
+              <label>Ridge Offset:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shifts noise values before ridge transformation to control ridge thickness and spacing</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_ridge_offset" min="0.0" max="2.0" step="0.1">
+              <div class="slider-value" id="wavelet_ridge_offset_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_warp_amount_control">
+              <label>Warp Amount:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Strength of domain warping effect for creating swirling, distorted patterns</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_warp_amount" min="0.0" max="10.0" step="0.5">
+              <div class="slider-value" id="wavelet_warp_amount_display"></div>
+            </div>
+            <div class="slider-group" id="wavelet_show_octave_control">
+              <label>Show octave:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Selects which specific octave to display in single octave visualization mode</div>
+                </div>
+              </label>
+              <input type="range" id="wavelet_show_octave" min="1" max="8">
+              <div class="slider-value" id="wavelet_show_octave_display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="gabor_noise" hidden>
+        <h2>Gabor noise</h2>
+        <p class="text-block">          
+          Gabor noise is a sophisticated procedural texture generation technique that creates noise by randomly distributing and summing a multitude of Gabor functions, which are essentially sine waves wrapped by a Gaussian (bell-curve) envelope. This kernel provides direct, independent control over the frequency (scale) and orientation of the noise features, allowing for highly anisotropic and spectral-specific patterns that mimic the statistics of natural textures.
+          It is primarily used in computer graphics for applications requiring a high degree of realism and control. Gabor noise excels at synthesizing complex, stripe-like, or directional patterns found in nature, such as wood grain, fingerprints, scratches, brushed metal, and fibrous materials, often producing results that are more realistic and less "synthetic" than other noise types.
+        </p>
+        <div class="input-group">
+          <div class="radio-groups-container">
+            <div class="radio-group">
+              <label>Final
+                <input type="radio" id="gabor_final" name="gabor_visualization" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows the complete multi-octave Gabor noise with all kernel contributions combined</div>
+                </div>
+              </label>
+              <label>Single octave
+                <input type="radio" id="gabor_single_octave" name="gabor_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Displays one octave of Gabor noise to show individual kernel contributions</div>
+                </div>
+              </label>
+              <label>Accumulated octaves
+                <input type="radio" id="gabor_accumulated_octaves" name="gabor_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows how Gabor noise complexity builds up as each octave is added</div>
+                </div>
+              </label>
+            </div>
+            <div class="radio-group">
+              <label>Standard
+                <input type="radio" id="gabor_standard" name="gabor_noise_type" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Standard isotropic Gabor noise with uniform directional distribution</div>
+                </div>
+              </label>
+              <label>Turbulence
+                <input type="radio" id="gabor_turbulence" name="gabor_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Absolute value of Gabor noise creating sharp, turbulent patterns</div>
+                </div>
+              </label>
+              <label>Anisotropic
+                <input type="radio" id="gabor_anisotropic" name="gabor_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Directional Gabor noise with elongated features along specific orientations</div>
+                </div>
+              </label>
+              <label>Domain Warp
+                <input type="radio" id="gabor_domain_warp" name="gabor_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Applies Gabor noise to distort input coordinates for complex swirling patterns</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="checkbox-group">
+            <label>Show Grid
+              <input type="checkbox" id="gabor_show_grid">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the underlying grid structure for Gabor kernel placement</div>
+              </div>
+            </label>
+            <label>Show Impulses
+              <input type="checkbox" id="gabor_show_impulses">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows the random impulse points where Gabor kernels are centered</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="slider-container">
+            <div class="slider-group" id="gabor_seed_control">
+              <label>Seed:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Random seed for Gabor kernel placement and parameter generation</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_seed" min="0" max="1000">
+              <div class="slider-value" id="gabor_seed_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_scale_control">
+              <label>Scale:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Overall scale factor controlling the density and size of Gabor features</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_scale" min="10" max="200" step="0.5">
+              <div class="slider-value" id="gabor_scale_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_octaves_control">
+              <label>Octaves:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Number of Gabor noise layers at different frequencies combined</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_octaves" min="1" max="8">
+              <div class="slider-value" id="gabor_octaves_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_lacunarity_control">
+              <label>Lacunarity:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Frequency multiplier between Gabor noise octaves</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_lacunarity" min="1.0" max="4.0" step="0.1">
+              <div class="slider-value" id="gabor_lacunarity_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_gain_control">
+              <label>Gain:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Amplitude multiplier between Gabor noise octaves</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_gain" min="0.0" max="1.0" step="0.05">
+              <div class="slider-value" id="gabor_gain_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_base_frequency_control">
+              <label>Base frequency:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Fundamental frequency of the sine wave component in Gabor kernels</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_base_frequency" min="1" max="50">
+              <div class="slider-value" id="gabor_base_frequency_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_bandwidth_control">
+              <label>Bandwidth:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the width of the Gaussian envelope around each Gabor kernel</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_bandwidth" min="0.1" max="2" step="0.1">
+              <div class="slider-value" id="gabor_bandwidth_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_kernel_radius_control">
+              <label>Kernel radius:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Maximum distance at which a Gabor kernel contributes to the noise</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_kernel_radius" min="2" max="4">
+              <div class="slider-value" id="gabor_kernel_radius_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_anisotropy_control">
+              <label>Anisotropy:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the elongation ratio of Gabor kernels for directional effects</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_anisotropy" min="0.25" max="4.0" step="0.05">
+              <div class="slider-value" id="gabor_anisotropy_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_warp_amount_control">
+              <label>Warp Amount:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Strength of domain warping effect applied to Gabor noise</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_warp_amount" min="0.0" max="10.0" step="0.5">
+              <div class="slider-value" id="gabor_warp_amount_display"></div>
+            </div>
+            <div class="slider-group" id="gabor_show_octave_control">
+              <label>Show octave:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Selects which specific octave to display in single octave visualization mode</div>
+                </div>
+              </label>
+              <input type="range" id="gabor_show_octave" min="1" max="8">
+              <div class="slider-value" id="gabor_show_octave_display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="anisotropic_noise" hidden>
+        <h2>Anisotropic noise</h2>
+        <p class="text-block">          
+          Anisotropic noise refers to any procedural noise function whose properties are direction-dependent, meaning it is not uniform in all directions. This contrasts with isotropic noise (like basic Perlin noise), which appears the same regardless of orientation.
+          Its primary use is in computer graphics to simulate materials and surfaces with inherent directional grain or striping. It is especially effective for realistically rendering materials like brushed metal, wood grain, certain rock strata, and fabrics, where the pattern's alignment is a key visual characteristic.
+        </p>
+        <div class="input-group">
+          <div class="radio-groups-container">
+            <div class="radio-group">
+              <label>Final
+                <input type="radio" id="anisotropic_final" name="anisotropic_visualization" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows the complete multi-octave anisotropic noise result</div>
+                </div>
+              </label>
+              <label>Single octave
+                <input type="radio" id="anisotropic_single_octave" name="anisotropic_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Displays one octave of anisotropic noise to show directional characteristics</div>
+                </div>
+              </label>
+              <label>Accumulated octaves
+                <input type="radio" id="anisotropic_accumulated_octaves" name="anisotropic_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows how anisotropic noise complexity builds up across octaves</div>
+                </div>
+              </label>
+            </div>
+            <div class="radio-group">
+              <label>Standard
+                <input type="radio" id="anisotropic_standard" name="anisotropic_noise_type" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Standard anisotropic noise with directional filtering</div>
+                </div>
+              </label>
+              <label>Turbulence
+                <input type="radio" id="anisotropic_turbulence" name="anisotropic_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Absolute value of anisotropic noise creating directional turbulent patterns</div>
+                </div>
+              </label>
+              <label>Ridge
+                <input type="radio" id="anisotropic_ridge" name="anisotropic_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Inverted anisotropic noise creating directional ridge patterns</div>
+                </div>
+              </label>
+              <label>Directional
+                <input type="radio" id="anisotropic_directional" name="anisotropic_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Strongly directional noise with emphasized orientation patterns</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="checkbox-group">
+            <label>Show Grid
+              <input type="checkbox" id="anisotropic_show_grid">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the underlying grid structure with directional information</div>
+              </div>
+            </label>
+            <label>Show direction
+              <input type="checkbox" id="anisotropic_show_direction">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Visualizes the primary direction vector of anisotropic filtering</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="slider-container">
+            <div class="slider-group" id="anisotropic_seed_control">
+              <label>Seed:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Random seed for anisotropic noise generation</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_seed" min="0" max="1000">
+              <div class="slider-value" id="anisotropic_seed_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_scale_control">
+              <label>Scale:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Overall scale factor controlling the frequency of anisotropic features</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_scale" min="10" max="200" step="0.5">
+              <div class="slider-value" id="anisotropic_scale_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_octaves_control">
+              <label>Octaves:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Number of anisotropic noise layers at different frequencies</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_octaves" min="1" max="8">
+              <div class="slider-value" id="anisotropic_octaves_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_lacunarity_control">
+              <label>Lacunarity:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Frequency multiplier between anisotropic noise octaves</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_lacunarity" min="1.0" max="4.0" step="0.1">
+              <div class="slider-value" id="anisotropic_lacunarity_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_gain_control">
+              <label>Gain:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Amplitude multiplier between anisotropic noise octaves</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_gain" min="0.0" max="1.0" step="0.05">
+              <div class="slider-value" id="anisotropic_gain_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_h_exponent_control">
+              <label>H Exponent:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Fractal dimension parameter controlling anisotropic noise roughness</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_h_exponent" min="0.0" max="2.0" step="0.1">
+              <div class="slider-value" id="anisotropic_h_exponent_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_ridge_offset_control">
+              <label>Ridge Offset:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shifts anisotropic noise values for ridge pattern control</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_ridge_offset" min="0.0" max="2.0" step="0.1">
+              <div class="slider-value" id="anisotropic_ridge_offset_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_angle_control">
+              <label>Angle:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Primary direction angle (in degrees) for anisotropic filtering</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_angle" min="0" max="360">
+              <div class="slider-value" id="anisotropic_angle_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_anisotropy_control">
+              <label>Anisotropy:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Strength of directional filtering. Higher values create more elongated features.</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_anisotropy" min="0.1" max="5" step="0.1">
+              <div class="slider-value" id="anisotropic_anisotropy_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_angle_step_control">
+              <label>Angle step:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Angle variation between octaves for complex directional patterns</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_angle_step" min="-90" max="90">
+              <div class="slider-value" id="anisotropic_angle_step_display"></div>
+            </div>
+            <div class="slider-group" id="anisotropic_show_octave_control">
+              <label>Show octave:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Selects which specific octave to display in single octave visualization mode</div>
+                </div>
+              </label>
+              <input type="range" id="anisotropic_show_octave" min="1" max="8">
+              <div class="slider-value" id="anisotropic_show_octave_display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="worley_noise" hidden>
+        <h2>Worley noise</h2>
+        <p class="text-block">          
+          Worley noise is a procedural texture generation technique that creates a cellular pattern by calculating the distance from any point to the nearest of a set of randomly distributed seed points. Its output typically resembles natural structures like cell membranes, cracked mud, lizard scales, or soap bubbles, making it fundamentally different from the cloud-like patterns of Perlin noise.
+          This noise is primarily used in computer graphics to simulate a wide array of organic and man-made cellular surfaces. Common applications include modeling stone walls, leather, biological tissues, foam, and abstract patterning for materials or terrain, providing a distinctly geometric and structural appearance.
+        </p>
+        <div class="input-group">
+          <div class="radio-groups-container">
+            <div class="radio-group">
+              <label>Final
+                <input type="radio" id="worley_final" name="worley_visualization" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows the complete multi-octave Worley noise with all cellular features</div>
+                </div>
+              </label>
+              <label>Single octave
+                <input type="radio" id="worley_single_octave" name="worley_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Displays one octave of Worley noise showing basic cellular structure</div>
+                </div>
+              </label>
+              <label>Accumulated octaves
+                <input type="radio" id="worley_accumulated_octaves" name="worley_visualization">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Shows how Worley noise complexity builds up across octaves</div>
+                </div>
+              </label>
+            </div>
+            <div class="radio-group">
+              <label>F1
+                <input type="radio" id="worley_f1" name="worley_noise_type" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Distance to the closest feature point, creating standard cellular patterns</div>
+                </div>
+              </label>
+              <label>F2 - F1
+                <input type="radio" id="worley_f2_minus_f1" name="worley_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Difference between second-closest and closest distances, creating vein-like patterns</div>
+                </div>
+              </label>
+              <label>Crackle
+                <input type="radio" id="worley_crackle" name="worley_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Modified Worley noise that creates sharp, cracked earth patterns</div>
+                </div>
+              </label>
+              <label>Domain Warp
+                <input type="radio" id="worley_domain_warp" name="worley_noise_type">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Applies Worley noise to distort input coordinates for organic cellular patterns</div>
+                </div>
+              </label>
+            </div>
+            <div class="radio-group">
+              <label>Euclidean
+                <input type="radio" id="worley_euclidean" name="worley_distance_metric" checked=true>
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Standard straight-line distance calculation (as the crow flies)</div>
+                </div>
+              </label>
+              <label>Manhattan
+                <input type="radio" id="worley_manhattan" name="worley_distance_metric">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Distance calculated as sum of absolute coordinate differences (grid-based movement)</div>
+                </div>
+              </label>
+              <label>Chebyshev
+                <input type="radio" id="worley_chebyshev" name="worley_distance_metric">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Distance calculated as maximum of coordinate differences (king movement in chess)</div>
+                </div>
+              </label>
+              <label>Minkowski
+                <input type="radio" id="worley_minkowski" name="worley_distance_metric">
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Generalized distance metric with customizable power parameter</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="checkbox-group">
+            <label>Show Grid
+              <input type="checkbox" id="worley_show_grid">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the underlying grid structure for Worley feature point generation</div>
+              </div>
+            </label>
+            <label>Show Points
+              <input type="checkbox" id="worley_show_points">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows the random feature points that define the cellular pattern centers</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="slider-container">
+            <div class="slider-group" id="worley_seed_control">
+              <label>Seed:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Random seed for Worley feature point placement</div>
+                </div>
+              </label>
+              <input type="range" id="worley_seed" min="0" max="1000">
+              <div class="slider-value" id="worley_seed_display"></div>
+            </div>
+            <div class="slider-group" id="worley_scale_control">
+              <label>Scale:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the density and size of Worley cellular features</div>
+                </div>
+              </label>
+              <input type="range" id="worley_scale" min="10" max="200" step="0.5">
+              <div class="slider-value" id="worley_scale_display"></div>
+            </div>
+            <div class="slider-group" id="worley_octaves_control">
+              <label>Octaves:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Number of Worley noise layers at different cellular densities</div>
+                </div>
+              </label>
+              <input type="range" id="worley_octaves" min="1" max="8">
+              <div class="slider-value" id="worley_octaves_display"></div>
+            </div>
+            <div class="slider-group" id="worley_lacunarity_control">
+              <label>Lacunarity:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Frequency multiplier between Worley noise octaves</div>
+                </div>
+              </label>
+              <input type="range" id="worley_lacunarity" min="1.0" max="4.0" step="0.1">
+              <div class="slider-value" id="worley_lacunarity_display"></div>
+            </div>
+            <div class="slider-group" id="worley_gain_control">
+              <label>Gain:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Amplitude multiplier between Worley noise octaves</div>
+                </div>
+              </label>
+              <input type="range" id="worley_gain" min="0.0" max="1.0" step="0.05">
+              <div class="slider-value" id="worley_gain_display"></div>
+            </div>
+            <div class="slider-group" id="worley_crackle_power_control">
+              <label>Crackle power:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Controls the sharpness and intensity of crackle pattern edges</div>
+                </div>
+              </label>
+              <input type="range" id="worley_crackle_power" min="0.5" max="4.0" step="0.25">
+              <div class="slider-value" id="worley_crackle_power_display"></div>
+            </div>
+            <div class="slider-group" id="worley_warp_amount_control">
+              <label>Warp Amount:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Strength of domain warping effect applied to Worley noise</div>
+                </div>
+              </label>
+              <input type="range" id="worley_warp_amount" min="0.1" max="2.0" step="0.1">
+              <div class="slider-value" id="worley_warp_amount_display"></div>
+            </div>
+            <div class="slider-group" id="worley_show_octave_control">
+              <label>Show octave:
+                <div class="help-container">
+                  <div class="help-circle">?</div>
+                  <div class="help-text">Selects which specific octave to display in single octave visualization mode</div>
+                </div>
+              </label>
+              <input type="range" id="worley_show_octave" min="1" max="8">
+              <div class="slider-value" id="worley_show_octave_display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+    </div>
+
+    <div class="right-column">
+      <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+
+  </body>
+
+
+</html>
