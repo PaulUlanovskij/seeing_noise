@@ -1,5 +1,6 @@
 use std::cell::LazyCell;
 
+use rayon::prelude::*;
 use wasm_bindgen::{JsCast, prelude::Closure};
 use web_sys::{HtmlElement, HtmlInputElement};
 
@@ -93,37 +94,31 @@ impl GaborNoiseImpl {
     }
 
     fn generate_coloring(&self, settings: GaborNoiseSettings) -> Vec<u8> {
-        let mut v = Vec::with_capacity(IMAGE_BYTES_COUNT as usize);
         let scale = settings.scale.value();
 
-        for y in 0..RESOLUTION {
-            for x in 0..RESOLUTION {
+        (0..(RESOLUTION * RESOLUTION) as usize)
+            .into_par_iter()
+            .flat_map(|i| {
+                let x = i % RESOLUTION as usize;
+                let y = i / RESOLUTION as usize;
                 let nx = ((x as f64) - (HALF_RESOLUTION as f64)) / scale;
                 let ny = ((y as f64) - (HALF_RESOLUTION as f64)) / scale;
 
-                let noise_val = match settings.noise_type.clone() {
+                let noise_val = match settings.noise_type {  // Removed clone()
                     NoiseType::Standard => self.fbm_standard(nx, ny, &settings),
                     NoiseType::Turbulence => self.fbm_turbulence(nx, ny, &settings),
                     NoiseType::Anisotropic => self.fbm_anisotropic(nx, ny, &settings),
                     NoiseType::DomainWarp => self.fbm_domain_warp(nx, ny, &settings),
                 };
 
-                if noise_val < 0. {
-                    let t = noise_val + 1.;
-                    v.push(255);
-                    v.push(lerp(t, 0.0, 255.0) as u8);
-                    v.push(255);
-                    v.push(255);
+                if noise_val < 0.0 {
+                    let t = noise_val + 1.0;
+                    [255u8, lerp(t, 0.0, 255.0) as u8, 255, 255]
                 } else {
-                    let t = noise_val;
-                    v.push(lerp(t, 255.0, 0.0) as u8);
-                    v.push(255);
-                    v.push(lerp(t, 255.0, 0.0) as u8);
-                    v.push(255);
+                    [lerp(noise_val, 255.0, 0.0) as u8, 255, lerp(noise_val, 255.0, 0.0) as u8, 255]
                 }
-            }
-        }
-        v
+            })
+            .collect()
     }
 
     pub fn fbm_standard(&self, x: f64, y: f64, settings: &GaborNoiseSettings) -> f64 {
