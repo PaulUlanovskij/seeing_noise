@@ -24,6 +24,9 @@ jobs:
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
 
       - name: Install wasm-pack (if needed for Rust WebAssembly)
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
