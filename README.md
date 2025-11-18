@@ -22,7 +22,11 @@ Each noise type comes with multiple fractional Brownian motion (fBm) configurati
 - Real-time parameter adjustment with instant visual feedback
 - Educational tooltips explaining every parameter and concept
 
-## Installation
+## Running
+You can access latest version of visualizer through Github Pages
+[https://paululanovskij.github.io/seeing_noise/](https://paululanovskij.github.io/seeing_noise/)
+
+If you want to run visualizer locally:
 You can download latest build of visualizer fromm Releases section.
 After you have downloaded and unpacked archive, just serve it via any http server of your liking.
 
