@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <script type="module">
+    import init from "./pkg/seeing_noise.js";
+    init();
+    </script>
+
+    <div class="left-column">
+      <h1>Interactive Procedural Noise Visualizer</h1>
+
+      <div class="input-group">
+        <label>Select a noise type</label>
+        <select id="noise_select">
+          <option disabled selected> -- select a noise  -- </option>
+          <option value="perlin">Perlin</option>
+          <option value="simplex">Simplex</option>
+          <option value="wavelet">Wavelet</option>
+          <option value="gabor">Gabor</option>
+          <option value="anisotropic">Anisotropic</option>
+          <option value="worley">Worley</option>
+        </select>
+      </div>
+
+      <div id="perlin" hidden>
+        <h2>Perlin noise</h2>
+        <p class="text-block">          
+          Perlin noise is a type of gradient noise used to generate natural-looking, smooth randomness. Unlike pure random values that jump erratically, Perlin noise produces coherent patterns that vary gradually across space, making it ideal for creating organic textures like clouds, terrain, and marble. It was invented by Ken Perlin in 1983 and has become a fundamental tool in computer graphics, game development, and procedural generation. The noise is created by interpolating random gradients at regular intervals, resulting in smooth transitions that feel lifelike rather than purely chaotic.
+        </p>
+      </div>
+      <div id="simplex" hidden>
+        <h2>Simplex noise</h2>
+        <p class="text-block">          
+          Simplex noise is an improved variant of Perlin noise, also created by Ken Perlin. It uses a simpler geometric structure based on simplexes (triangular grids) instead of hypercubes, making it computationally faster and more efficient—especially in higher dimensions. Simplex noise produces smoother, more isotropic results with fewer directional artifacts than Perlin noise. It's widely used in modern game engines, terrain generation, and procedural textures because it combines better visual quality with superior performance. The algorithm is particularly effective for creating natural-looking features like clouds, mountains, and water surfaces while maintaining smooth gradients throughout the noise field.
+        </p>
+      </div>
+      <div id="wavelet" hidden>
+        <h2>Wavelet noise</h2>
+        <p class="text-block">          
+          Wavelet noise is an advanced procedural noise function that improves upon classic Perlin noise by offering a more uniform distribution of frequencies. This key characteristic eliminates visible grid artifacts and provides superior control over the texture's spectral content, resulting in more organic and less repetitive patterns.
+          Its primary use is in high-end computer graphics for generating realistic natural phenomena. It is especially valuable for adding fine, turbulent details to fluid simulations like smoke and fire, as well as for creating detailed procedural textures and terrains where control over both broad features and sharp details is essential.
+        </p>
+      </div>
+      <div id="gabor" hidden>
+        <h2>Gabor noise</h2>
+        <p class="text-block">          
+          Gabor noise is a sophisticated procedural texture generation technique that creates noise by randomly distributing and summing a multitude of Gabor functions, which are essentially sine waves wrapped by a Gaussian (bell-curve) envelope. This kernel provides direct, independent control over the frequency (scale) and orientation of the noise features, allowing for highly anisotropic and spectral-specific patterns that mimic the statistics of natural textures.
+          It is primarily used in computer graphics for applications requiring a high degree of realism and control. Gabor noise excels at synthesizing complex, stripe-like, or directional patterns found in nature, such as wood grain, fingerprints, scratches, brushed metal, and fibrous materials, often producing results that are more realistic and less "synthetic" than other noise types.
+        </p>
+      </div>
+      <div id="gabor" hidden>
+        <h2>Gabor noise</h2>
+        <p class="text-block">          
+          Gabor noise is a sophisticated procedural texture generation technique that creates noise by randomly distributing and summing a multitude of Gabor functions, which are essentially sine waves wrapped by a Gaussian (bell-curve) envelope. This kernel provides direct, independent control over the frequency (scale) and orientation of the noise features, allowing for highly anisotropic and spectral-specific patterns that mimic the statistics of natural textures.
+          It is primarily used in computer graphics for applications requiring a high degree of realism and control. Gabor noise excels at synthesizing complex, stripe-like, or directional patterns found in nature, such as wood grain, fingerprints, scratches, brushed metal, and fibrous materials, often producing results that are more realistic and less "synthetic" than other noise types.
+        </p>
+      </div>
+      <div id="worley" hidden>
+        <h2>Worley noise</h2>
+        <p class="text-block">          
+          Worley noise is a procedural texture generation technique that creates a cellular pattern by calculating the distance from any point to the nearest of a set of randomly distributed seed points. Its output typically resembles natural structures like cell membranes, cracked mud, lizard scales, or soap bubbles, making it fundamentally different from the cloud-like patterns of Perlin noise.
+          This noise is primarily used in computer graphics to simulate a wide array of organic and man-made cellular surfaces. Common applications include modeling stone walls, leather, biological tissues, foam, and abstract patterning for materials or terrain, providing a distinctly geometric and structural appearance.
+        </p>
+      </div>
+
+      <div class="input-group">
+        <div class="radio-groups-container">
+          <div class="radio-group">
+            <label id="final_control" hidden>Final
+              <input type="radio" id="final" name="visualization" checked=true>
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Displays the complete multi-octave Perlin noise result with all processing applied</div>
+              </div>
+            </label>
+            <label id="single_octave_control" hidden>Single octave
+              <input type="radio" id="single_octave" name="visualization">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows only one octave of noise, useful for understanding the basic Perlin noise structure</div>
+              </div>
+            </label>
+            <label id="accumulated_octaves_control" hidden>Accumulated octaves
+              <input type="radio" id="accumulated_octaves" name="visualization">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shows how noise complexity builds up as each octave is added to the previous ones</div>
+              </div>
+            </label>
+          </div>
+          <div class="radio-group">
+            <label id="standard_control" hidden>Standard
+              <input type="radio" id="standard" name="noise_type" checked=true>
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Classic Perlin noise with smooth interpolation between gradient values</div>
+              </div>
+            </label>
+            <label id="turbulence_control" hidden>Turbulence
+              <input type="radio" id="turbulence" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Absolute value of noise creating sharp ridges and valleys, useful for cloud formations and marble veins</div>
+              </div>
+            </label>
+            <label id="ridge_control" hidden>Ridge
+              <input type="radio" id="ridge" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Inverted and scaled noise that creates mountain ridge-like patterns</div>
+              </div>
+            </label>
+            <label id="anisotropic_control" hidden>Anisotropic
+              <input type="radio" id="anisotropic" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Directional Gabor noise with elongated features along specific orientations</div>
+              </div>
+            </label>
+            <label id="f1_control" hidden>F1
+              <input type="radio" id="f1" name="noise_type" checked=true>
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Distance to the closest feature point, creating standard cellular patterns</div>
+              </div>
+            </label>
+            <label id="f2_minus_f1_control" hidden>F2 - F1
+              <input type="radio" id="f2_minus_f1" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Difference between second-closest and closest distances, creating vein-like patterns</div>
+              </div>
+            </label>
+            <label id="crackle_control" hidden>Crackle
+              <input type="radio" id="crackle" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Modified Worley noise that creates sharp, cracked earth patterns</div>
+              </div>
+            </label>
+            <label id="domain_warp_control" hidden>Domain Warp
+              <input type="radio" id="domain_warp" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Applies noise to distort the input coordinates, creating swirling, organic patterns</div>
+              </div>
+            </label>
+            <label id="directional_control" hidden>Directional
+              <input type="radio" id="directional" name="noise_type">
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Strongly directional noise with emphasized orientation patterns</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="radio-group">
+        <label id="euclidean_control" hidden>Euclidean
+          <input type="radio" id="euclidean" name="distance_metric" checked=true>
+          <div class="help-container">
+            <div class="help-circle">?</div>
+            <div class="help-text">Standard straight-line distance calculation (as the crow flies)</div>
+          </div>
+        </label>
+        <label id="manhattan_control" hidden>Manhattan
+          <input type="radio" id="manhattan" name="distance_metric">
+          <div class="help-container">
+            <div class="help-circle">?</div>
+            <div class="help-text">Distance calculated as sum of absolute coordinate differences (grid-based movement)</div>
+          </div>
+        </label>
+        <label id="chebyshev_control" hidden>Chebyshev
+          <input type="radio" id="chebyshev" name="distance_metric">
+          <div class="help-container">
+            <div class="help-circle">?</div>
+            <div class="help-text">Distance calculated as maximum of coordinate differences (king movement in chess)</div>
+          </div>
+        </label>
+        <label id="minkowski_control" hidden>Minkowski
+          <input type="radio" id="minkowski" name="distance_metric">
+          <div class="help-container">
+            <div class="help-circle">?</div>
+            <div class="help-text">Generalized distance metric with customizable power parameter</div>
+          </div>
+        </label>
+      </div>
+
+
+      <div class="input-group">
+        <div class="checkbox-group">
+          <label id="show_grid_control" hidden>Show Grid
+            <input type="checkbox" id="show_grid">
+            <div class="help-container">
+              <div class="help-circle">?</div>
+              <div class="help-text">Displays the underlying integer grid where gradient vectors are defined</div>
+            </div>
+          </label>
+          <label id="show_dot_products_control" hidden>Show Dot Products
+            <input type="checkbox" id="show_dot_products">
+            <div class="help-container">
+              <div class="help-circle">?</div>
+              <div class="help-text">Visualizes the dot products between gradient vectors and distance vectors before interpolation</div>
+            </div>
+          </label>
+          <label id="show_vectors_control" hidden>Show Vectors
+            <input type="checkbox" id="show_vectors">
+            <div class="help-container">
+              <div class="help-circle">?</div>
+              <div class="help-text">Shows the random gradient vectors assigned to each grid point</div>
+            </div>
+          </label>
+          <label id="show_impulses_control" hidden>Show Impulses
+            <input type="checkbox" id="show_impulses">
+            <div class="help-container">
+              <div class="help-circle">?</div>
+              <div class="help-text">Shows the random impulse points where Gabor kernels are centered</div>
+            </div>
+          </label>
+          <label id="show_direction_control" hidden>Show direction
+            <input type="checkbox" id="show_direction">
+            <div class="help-container">
+              <div class="help-circle">?</div>
+              <div class="help-text">Visualizes the primary direction vector of anisotropic filtering</div>
+            </div>
+          </label>
+          <label id="show_points_control" hidden>Show Points
+            <input type="checkbox" id="show_points">
+            <div class="help-container">
+              <div class="help-circle">?</div>
+              <div class="help-text">Shows the random feature points that define the cellular pattern centers</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="slider-container">
+          <div class="slider-group" id="seed_control" hidden>
+            <label>Seed:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Initial random number generator seed. Different seeds create completely different noise patterns while maintaining the same characteristics.</div>
+              </div>
+            </label>
+            <input type="range" id="seed">
+            <div class="slider-value" id="seed_display"></div>
+          </div>
+          <div class="slider-group" id="scale_control" hidden>
+            <label>Scale:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Controls the frequency of the base noise. Lower values = higher frequency (more detail), higher values = lower frequency (larger features).</div>
+              </div>
+            </label>
+            <input type="range" id="scale" step="0.5">
+            <div class="slider-value" id="scale_display"></div>
+          </div>
+          <div class="slider-group" id="octaves_control" hidden>
+            <label>Octaves:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Number of noise layers at different frequencies. Each octave adds higher frequency detail with reduced amplitude.</div>
+              </div>
+            </label>
+            <input type="range" id="octaves">
+            <div class="slider-value" id="octaves_display"></div>
+          </div>
+          <div class="slider-group" id="lacunarity_control" hidden>
+            <label>Lacunarity:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Frequency multiplier between octaves. Higher values make each successive octave more detailed (higher frequency).</div>
+              </div>
+            </label>
+            <input type="range" id="lacunarity" step="0.1">
+            <div class="slider-value" id="lacunarity_display"></div>
+          </div>
+          <div class="slider-group" id="gain_control" hidden>
+            <label>Gain:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Amplitude multiplier between octaves (also called persistence). Controls how much each octave contributes to the final result.</div>
+              </div>
+            </label>
+            <input type="range" id="gain" step="0.05">
+            <div class="slider-value" id="gain_display"></div>
+          </div>
+          <div class="slider-group" id="h_exponent_control" hidden>
+            <label>H Exponent:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Fractal dimension parameter. Controls the roughness of the fractal noise. Lower values = smoother, higher values = rougher.</div>
+              </div>
+            </label>
+            <input type="range" id="h_exponent" step="0.1">
+            <div class="slider-value" id="h_exponent_display"></div>
+          </div>
+          <div class="slider-group" id="ridge_offset_control" hidden>
+            <label>Ridge Offset:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Shifts the noise values before applying ridge transformation. Affects the thickness and spacing of ridges.</div>
+              </div>
+            </label>
+            <input type="range" id="ridge_offset" step="0.1">
+            <div class="slider-value" id="ridge_offset_display"></div>
+          </div>
+          <div class="slider-group" id="base_frequency_control" hidden>
+            <label>Base frequency:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Fundamental frequency of the sine wave component in Gabor kernels</div>
+              </div>
+            </label>
+            <input type="range" id="base_frequency">
+            <div class="slider-value" id="base_frequency_display"></div>
+          </div>
+          <div class="slider-group" id="bandwidth_control" hidden>
+            <label>Bandwidth:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Controls the width of the Gaussian envelope around each Gabor kernel</div>
+              </div>
+            </label>
+            <input type="range" id="bandwidth" step="0.1">
+            <div class="slider-value" id="bandwidth_display"></div>
+          </div>
+          <div class="slider-group" id="kernel_radius_control" hidden>
+            <label>Kernel radius:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Maximum distance at which a Gabor kernel contributes to the noise</div>
+              </div>
+            </label>
+            <input type="range" id="kernel_radius">
+            <div class="slider-value" id="kernel_radius_display"></div>
+          </div>
+          <div class="slider-group" id="anisotropy_control" hidden>
+            <label>Anisotropy:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Controls the elongation ratio of Gabor kernels for directional effects</div>
+              </div>
+            </label>
+            <input type="range" id="anisotropy" step="0.05">
+            <div class="slider-value" id="anisotropy_display"></div>
+          </div>
+          <div class="slider-group" id="angle_control" hidden>
+            <label>Angle:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Primary direction angle (in degrees) for anisotropic filtering</div>
+              </div>
+            </label>
+            <input type="range" id="angle">
+            <div class="slider-value" id="angle_display"></div>
+          </div>
+          <div class="slider-group" id="angle_step_control" hidden>
+            <label>Angle step:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Angle variation between octaves for complex directional patterns</div>
+              </div>
+            </label>
+            <input type="range" id="angle_step">
+            <div class="slider-value" id="angle_step_display"></div>
+          </div>
+          <div class="slider-group" id="crackle_power_control" hidden>
+            <label>Crackle power:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Controls the sharpness and intensity of crackle pattern edges</div>
+              </div>
+            </label>
+            <input type="range" id="crackle_power" step="0.25">
+            <div class="slider-value" id="crackle_power_display"></div>
+          </div>
+          <div class="slider-group" id="warp_amount_control" hidden>
+            <label>Warp Amount:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Strength of the domain warping effect. Higher values create more dramatic distortions and swirling patterns.</div>
+              </div>
+            </label>
+            <input type="range" id="warp_amount" step="0.5">
+            <div class="slider-value" id="warp_amount_display"></div>
+          </div>
+          <div class="slider-group" id="show_octave_control" hidden>
+            <label>Show octave:
+              <div class="help-container">
+                <div class="help-circle">?</div>
+                <div class="help-text">Selects which specific octave to display when using single octave or accumulated octaves visualization modes.</div>
+              </div>
+            </label>
+            <input type="range" id="show_octave">
+            <div class="slider-value" id="show_octave_display"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-column">
+      <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+
+  </body>
+</html>
