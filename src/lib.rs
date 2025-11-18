@@ -4,13 +4,13 @@ use std::{cell::LazyCell, sync::Mutex};
 
 use wasm_bindgen::prelude::*;
 mod noises;
-use noises::perlin_noise::PerlinNoise;
 use web_sys::{Document, Element, HtmlSelectElement};
 
 use crate::{
     drawer::{HALF_RESOLUTION, RESOLUTION, draw_grid, draw_noise},
     noises::{
-        anisotropic_noise::AnisotropicNoise, gabor_noise::GaborNoise, noise::Noise,
+        noise::Noise,
+        anisotropic_noise::AnisotropicNoise, gabor_noise::GaborNoise, perlin_noise::PerlinNoise,
         simplex_noise::SimplexNoise, wavelet_noise::WaveletNoise, worley_noise::WorleyNoise,
     },
 };
@@ -23,7 +23,7 @@ thread_local! {
         web_sys::window().unwrap().document().unwrap()
     });
 }
-elements!(noise, (select, HtmlSelectElement),);
+elements!((noise_select, HtmlSelectElement),);
 static CURRENT_NOISE: Mutex<String> = Mutex::new(String::new());
 
 pub fn get_element_by_id(id: &str) -> Element {
@@ -36,7 +36,7 @@ pub fn get_element_by_id(id: &str) -> Element {
 }
 
 fn change_noise() {
-    let new_noise = parse_value!(select, String);
+    let new_noise = parse_value!(noise_select, String);
     let mut current_noise = CURRENT_NOISE.lock().unwrap();
 
     match current_noise.as_str() {
@@ -64,10 +64,11 @@ fn change_noise() {
     current_noise.clear();
     current_noise.push_str(new_noise.as_str());
 }
+define_closure!(change_noise, change_noise);
 
 #[wasm_bindgen(start)]
 fn start() {
-    add_callback!(select, "input", change_noise);
+    add_callback!(noise_select, "input", change_noise);
     PerlinNoise::setup();
     SimplexNoise::setup();
     WaveletNoise::setup();

@@ -115,7 +115,7 @@ impl WaveletNoiseImpl {
                 let nx = ((x as f64) - (HALF_RESOLUTION as f64)) / scale;
                 let ny = ((y as f64) - (HALF_RESOLUTION as f64)) / scale;
 
-                let noise_val = match settings.noise_type.clone() {
+                let noise_val = match settings.noise_type {
                     NoiseType::Standard => self.fbm_standard(nx, ny, &settings),
                     NoiseType::Turbulence => self.fbm_turbulence(nx, ny, &settings),
                     NoiseType::Ridge => self.fbm_ridge(nx, ny, &settings),
@@ -260,35 +260,6 @@ impl WaveletNoise {
     fn on_update() {
         let octaves = Octaves::parse().value();
         SHOW_OCTAVE.with(|e| e.set_max(format!("{octaves}").as_str()));
-
-        if Visualization::parse() == Visualization::Final {
-            set_hidden!(show_octave_control, true);
-        } else {
-            set_hidden!(show_octave_control, false);
-        }
-
-        match NoiseType::parse() {
-            NoiseType::Standard => {
-                set_hidden!(h_exponent_control, false);
-                set_hidden!(ridge_offset_control, true);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::Turbulence => {
-                set_hidden!(h_exponent_control, true);
-                set_hidden!(ridge_offset_control, true);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::Ridge => {
-                set_hidden!(h_exponent_control, true);
-                set_hidden!(ridge_offset_control, false);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::DomainWarp => {
-                set_hidden!(h_exponent_control, true);
-                set_hidden!(ridge_offset_control, true);
-                set_hidden!(warp_amount_control, false);
-            }
-        }
     }
 
     fn generate_and_draw(settings: WaveletNoiseSettings) {
@@ -306,19 +277,29 @@ impl WaveletNoise {
 
 define_noise!(wavelet,
     sliders:[
-        (seed, u32, 42.),
-        (scale, f64, 50.),
-        (octaves, u32, 1.),
-        (lacunarity, f64, 2.0),
-        (gain, f64, 0.5),
-        (h_exponent, f64, 1.0),
-        (ridge_offset, f64, 1.0),
-        (warp_amount, f64, 4.0),
-        (show_octave, u32, 1.)
+        (seed, u32, 0., 42., 1000.),
+        (scale, f64, 10., 50., 200.),
+        (octaves, u32, 1., 1., 8.),
+        (lacunarity, f64, 1., 2., 4.),
+        (gain, f64, 0., 0.5, 1.),
+        (h_exponent, f64, 0., 1., 2.),
+        (ridge_offset, f64, 0., 1., 2.),
+        (warp_amount, f64, 0., 4.0, 10.),
+        (show_octave, u32, 1., 1., 8.)
     ];
     radios:[
-        (visualization, final, single_octave, accumulated_octaves),
-        (noise_type, standard, turbulence, ridge, domain_warp)
+        (visualization, 
+            (final, hide: [show_octave]), 
+            (single_octave), 
+            (accumulated_octaves)
+        ),
+        (noise_type, 
+            (standard, hide: [ridge_offset, warp_amount]), 
+            (turbulence, hide:[h_exponent, ridge_offset, warp_amount]), 
+            (ridge, hide:[h_exponent, warp_amount]), 
+            (domain_warp, hide:[h_exponent, ridge_offset])
+        )
     ];
     checkboxes:[show_grid];
 );
+

@@ -94,7 +94,7 @@ impl WorleyNoiseImpl {
                 let nx = ((x as f64) - (HALF_RESOLUTION as f64)) / scale;
                 let ny = ((y as f64) - (HALF_RESOLUTION as f64)) / scale;
 
-                let noise_val = match settings.noise_type.clone() {
+                let noise_val = match settings.noise_type {
                     NoiseType::F1 => self.fbm_f1(nx, ny, &settings),
                     NoiseType::F2MinusF1 => self.fbm_f2_minus_f1(nx, ny, &settings),
                     NoiseType::Crackle => self.fbm_crackle(nx, ny, &settings),
@@ -131,13 +131,13 @@ impl WorleyNoiseImpl {
         let show_octave = settings.show_octave.value();
         let gain = settings.gain.value();
         let lacunarity = settings.lacunarity.value();
-        let distance_metric = settings.distance_metric.clone();
+        let distance_metric = settings.distance_metric;
 
         for i in 1..=octaves {
             let (f1, _) = self.worley_distance(
                 x * frequency, 
                 y * frequency, 
-                distance_metric.clone()
+                distance_metric
             );
 
             let include = match settings.visualization {
@@ -169,13 +169,13 @@ impl WorleyNoiseImpl {
         let show_octave = settings.show_octave.value();
         let gain = settings.gain.value();
         let lacunarity = settings.lacunarity.value();
-        let distance_metric = settings.distance_metric.clone();
+        let distance_metric = settings.distance_metric;
 
         for i in 1..=octaves {
             let (f1, f2) = self.worley_distance(
                 x * frequency, 
                 y * frequency, 
-                distance_metric.clone()
+                distance_metric
             );
 
             let include = match settings.visualization {
@@ -207,14 +207,14 @@ impl WorleyNoiseImpl {
         let show_octave = settings.show_octave.value();
         let gain = settings.gain.value();
         let lacunarity = settings.lacunarity.value();
-        let distance_metric = settings.distance_metric.clone();
+        let distance_metric = settings.distance_metric;
         let crackle_power = settings.crackle_power.value();
 
         for i in 1..=octaves {
             let (f1, _) = self.worley_distance(
                 x * frequency, 
                 y * frequency, 
-                distance_metric.clone()
+                distance_metric
             );
 
             let include = match settings.visualization {
@@ -260,31 +260,6 @@ impl WorleyNoise {
     fn on_update() {
         let octaves = Octaves::parse().value();
         SHOW_OCTAVE.with(|e| e.set_max(format!("{octaves}").as_str()));
-
-        if Visualization::parse() == Visualization::Final {
-            set_hidden!(show_octave_control, true);
-        } else {
-            set_hidden!(show_octave_control, false);
-        }
-
-        match NoiseType::parse() {
-            NoiseType::F1 => {
-                set_hidden!(crackle_power_control, true);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::F2MinusF1 => {
-                set_hidden!(crackle_power_control, true);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::Crackle => {
-                set_hidden!(crackle_power_control, false);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::DomainWarp => {
-                set_hidden!(crackle_power_control, true);
-                set_hidden!(warp_amount_control, false);
-            }
-        }
     }
     
     fn generate_and_draw(settings: WorleyNoiseSettings) {
@@ -327,19 +302,34 @@ impl WorleyNoise {
 
 define_noise!(worley,
     sliders:[
-        (seed, u32, 42.),
-        (scale, f64, 50.),
-        (octaves, u32, 1.),
-        (lacunarity, f64, 2.0),
-        (gain, f64, 0.5),
-        (crackle_power, f64, 2.0),
-        (warp_amount, f64, 0.5),
-        (show_octave, u32, 1.)
+        (seed, u32, 0., 42., 1000.),
+        (scale, f64, 10., 50., 200.),
+        (octaves, u32, 1., 1., 8.),
+        (lacunarity, f64, 1., 2., 4.),
+        (gain, f64, 0., 0.5, 1.),
+        (crackle_power, f64, 0.5, 2.0, 4.0),
+        (warp_amount, f64, 0.1, 1.0, 2.),
+        (show_octave, u32, 1., 1., 8.)
     ];
     radios:[
-        (visualization, final, single_octave, accumulated_octaves),
-        (noise_type, f1, f2_minus_f1, crackle, domain_warp),
-        (distance_metric, euclidean, manhattan, chebyshev, minkowski)
+        (visualization, 
+            (final, hide: [show_octave]), 
+            (single_octave), 
+            (accumulated_octaves)
+        ),
+        (noise_type, 
+            (f1, hide: [crackle_power, warp_amount]), 
+            (f2_minus_f1, hide:[crackle_power, warp_amount]), 
+            (crackle, hide:[warp_amount]), 
+            (domain_warp, hide:[crackle_power])
+        ),
+        (distance_metric, 
+            (euclidean), 
+            (manhattan), 
+            (chebyshev), 
+            (minkowski)
+        )
     ];
     checkboxes:[show_grid, show_points];
 );
+

@@ -6,7 +6,7 @@ use web_sys::{HtmlElement, HtmlInputElement};
 
 use super::noise::Noise;
 use crate::{
-    drawer::{IMAGE_BYTES_COUNT, draw_arrow},
+    drawer::{draw_arrow},
     noises::helpers::{lerp, shuffle},
     *,
 };
@@ -268,31 +268,6 @@ impl GaborNoise {
     fn on_update() {
         let octaves = Octaves::parse().value();
         SHOW_OCTAVE.with(|e| e.set_max(format!("{octaves}").as_str()));
-
-        if Visualization::parse() == Visualization::Final {
-            set_hidden!(show_octave_control, true);
-        } else {
-            set_hidden!(show_octave_control, false);
-        }
-
-        match NoiseType::parse() {
-            NoiseType::Standard => {
-                set_hidden!(anisotropy_control, true);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::Turbulence => {
-                set_hidden!(anisotropy_control, true);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::Anisotropic => {
-                set_hidden!(anisotropy_control, false);
-                set_hidden!(warp_amount_control, true);
-            }
-            NoiseType::DomainWarp => {
-                set_hidden!(anisotropy_control, true);
-                set_hidden!(warp_amount_control, false);
-            }
-        }
     }
     
     fn generate_and_draw(settings: GaborNoiseSettings) {
@@ -314,21 +289,31 @@ impl GaborNoise {
 
 define_noise!(gabor,
     sliders:[
-        (seed, u32, 42.),
-        (scale, f64, 50.),
-        (octaves, u32, 1.),
-        (lacunarity, f64, 2.0),
-        (gain, f64, 0.5),
-        (base_frequency, f64, 10.0),
-        (bandwidth, f64, 0.5),
-        (kernel_radius, u32, 3.),
-        (anisotropy, f64, 1.0),
-        (warp_amount, f64, 4.0),
-        (show_octave, u32, 1.)
+        (seed, u32, 0., 42., 1000.),
+        (scale, f64, 10., 50., 200.),
+        (octaves, u32, 1., 1., 8.),
+        (lacunarity, f64, 1., 2., 4.),
+        (gain, f64, 0., 0.5, 1.),
+        (base_frequency, f64, 1., 10.0, 50.),
+        (bandwidth, f64, 0.1, 0.5, 2.),
+        (kernel_radius, u32, 2., 3., 4.),
+        (anisotropy, f64, 0.25, 1.0, 4.),
+        (warp_amount, f64, 0., 4.0, 10.),
+        (show_octave, u32, 1., 1., 8.)
     ];
     radios:[
-        (visualization, final, single_octave, accumulated_octaves),
-        (noise_type, standard, turbulence, anisotropic, domain_warp)
+        (visualization, 
+            (final, hide: [show_octave]), 
+            (single_octave), 
+            (accumulated_octaves)
+        ),
+        (noise_type, 
+            (standard, hide: [anisotropy, warp_amount]), 
+            (turbulence, hide:[anisotropy, warp_amount]), 
+            (anisotropic, hide:[warp_amount]), 
+            (domain_warp, hide:[anisotropy])
+        )
     ];
     checkboxes:[show_grid, show_impulses];
 );
+

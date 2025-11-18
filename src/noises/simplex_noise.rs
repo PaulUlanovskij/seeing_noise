@@ -30,7 +30,7 @@ impl SimplexNoiseImpl {
         self.permutation[i & 255]
     }
 
-    fn noise(&self, x: f64, y: f64) -> f64 {
+    fn noise_val(&self, x: f64, y: f64) -> f64 {
         let s = (x + y) * Self::F2;
         let i = (x + s).floor();
         let j = (y + s).floor();
@@ -91,9 +91,6 @@ impl SimplexNoiseImpl {
         settings: &SimplexNoiseSettings,
     ) -> Vec<u8> {
         let scale = settings.scale.value();
-        let octaves = settings.octaves.value();
-        let persistence = settings.persistence.value();
-        let coloring = &settings.coloring;
 
         let mut v = Vec::with_capacity(IMAGE_BYTES_COUNT as usize);
 
@@ -102,7 +99,12 @@ impl SimplexNoiseImpl {
                 let nx = (x as f64 - HALF_RESOLUTION as f64) / scale;
                 let ny = (y as f64 - HALF_RESOLUTION as f64) / scale;
 
-                let noise_val = self.octave_noise(nx, ny, octaves, persistence, coloring);
+                let noise_val = match settings.noise_type {
+                    NoiseType::Standard => self.fbm_standard(nx, ny, settings),
+                    NoiseType::Turbulence => self.fbm_turbulence(nx, ny, settings),
+                    NoiseType::Ridge => self.fbm_ridge(nx, ny, settings),
+                    NoiseType::DomainWarp => self.fbm_domain_warp(nx, ny, settings),
+                };
 
                 let (r, g, b) = if noise_val < 0.0 {
                     let t = noise_val + 1.0;
@@ -118,34 +120,6 @@ impl SimplexNoiseImpl {
             }
         }
         v
-    }
-
-    fn octave_noise(
-        &self,
-        x: f64,
-        y: f64,
-        octaves: u32,
-        persistence: f64,
-        coloring: &Coloring,
-    ) -> f64 {
-        let mut total = 0.0;
-        let mut frequency = 1.0;
-        let mut amplitude = 1.0;
-        let mut max_value = 0.0;
-
-        for _ in 0..octaves {
-            let noise = match coloring {
-                Coloring::Full | Coloring::DotProducts => self.noise(x * frequency, y * frequency),
-                Coloring::None => 0.0,
-            };
-
-            total += noise * amplitude;
-            max_value += amplitude;
-            amplitude *= persistence;
-            frequency *= 2.0;
-        }
-
-        total / max_value
     }
 
     fn get_simplex_corners(&self, x: f64, y: f64) -> SimplexCorners {
@@ -170,8 +144,6 @@ impl SimplexNoiseImpl {
         let gi2 = self.get_perm(ii + 1 + self.get_perm(jj + 1));
 
         SimplexCorners {
-            i: i as isize,
-            j: j as isize,
             i1,
             j1,
             gi0,
@@ -179,10 +151,124 @@ impl SimplexNoiseImpl {
             gi2,
         }
     }
+
+    pub fn fbm_standard(&self, x: f64, y: f64, settings: &SimplexNoiseSettings) -> f64 {
+        let mut total = 0.0;
+        let mut frequency = 1.0;
+        let mut amplitude = 1.0;
+        let mut max_value = 0.0;
+
+        let octaves = settings.octaves.value();
+        let show_octave = settings.show_octave.value();
+        let gain = settings.gain.value();
+        let h_exponent = settings.h_exponent.value();
+        let lacunarity = settings.lacunarity.value();
+
+        for i in 1..=octaves {
+            let noise_val = self.noise_val(x * frequency, y * frequency);
+
+            let include = match settings.visualization {
+                Visualization::Final => true,
+                Visualization::SingleOctave => i == show_octave,
+                Visualization::AccumulatedOctaves => i <= show_octave,
+            };
+            if include {
+                total += noise_val * amplitude;
+                max_value += amplitude;
+            }
+            amplitude *= gain.powf(h_exponent);
+            frequency *= lacunarity;
+        }
+
+        total / max_value
+    }
+
+    pub fn fbm_turbulence(&self, x: f64, y: f64, settings: &SimplexNoiseSettings) -> f64 {
+        let mut total = 0.0;
+        let mut frequency = 1.0;
+        let mut amplitude = 1.0;
+        let mut max_value = 0.0;
+
+        let octaves = settings.octaves.value();
+        let show_octave = settings.show_octave.value();
+        let gain = settings.gain.value();
+        let lacunarity = settings.lacunarity.value();
+
+        for i in 1..=octaves {
+            let noise_val = self
+                .noise_val(x * frequency, y * frequency)
+                .abs();
+
+            let include = match settings.visualization {
+                Visualization::Final => true,
+                Visualization::SingleOctave => i == show_octave,
+                Visualization::AccumulatedOctaves => i <= show_octave,
+            };
+            if include {
+                total += noise_val * amplitude;
+                max_value += amplitude;
+            }
+            amplitude *= gain;
+            frequency *= lacunarity;
+        }
+
+        total / max_value
+    }
+
+    pub fn fbm_ridge(&self, x: f64, y: f64, settings: &SimplexNoiseSettings) -> f64 {
+        let mut total = 0.0;
+        let mut frequency = 1.0;
+        let mut amplitude = 1.0;
+        let mut max_value = 0.0;
+        let mut weight = 1.0;
+
+        let octaves = settings.octaves.value();
+        let show_octave = settings.show_octave.value();
+        let gain = settings.gain.value();
+        let lacunarity = settings.lacunarity.value();
+        for i in 1..=octaves {
+            let noise_val = self
+                .noise_val(x * frequency, y * frequency)
+                .abs();
+            let noise_val = settings.ridge_offset.value() - noise_val;
+
+            let include = match settings.visualization {
+                Visualization::Final => true,
+                Visualization::SingleOctave => i == show_octave,
+                Visualization::AccumulatedOctaves => i <= show_octave,
+            };
+            if include {
+                let noise_val = noise_val * noise_val * weight;
+                total += noise_val * amplitude;
+                max_value += amplitude;
+            }
+
+            weight = (noise_val * 2.0).clamp(0.0, 1.0);
+            amplitude *= gain;
+            frequency *= lacunarity;
+        }
+
+        total / max_value
+    }
+
+    pub fn fbm_domain_warp(&self, x: f64, y: f64, settings: &SimplexNoiseSettings) -> f64 {
+        let warp_amount = settings.warp_amount.value();
+
+        let adjusted_settings = SimplexNoiseSettings {
+            h_exponent: HExponent(1.0),
+            ..settings.clone()
+        };
+        let qx = self.fbm_standard(x, y, &adjusted_settings);
+        let qy = self.fbm_standard(x + 5.2, y + 1.3, &adjusted_settings);
+
+        let rx = x + warp_amount * qx;
+        let ry = y + warp_amount * qy;
+
+        self.fbm_standard(rx, ry, &adjusted_settings)
+    }
+
 }
 struct SimplexCorners {
-    i: isize,
-    j: isize,
     i1: usize,
     j1: usize,
     gi0: usize,
@@ -192,13 +278,16 @@ struct SimplexCorners {
 
 impl SimplexNoise {
     fn on_setup(){}
-    fn on_update(){}
+    fn on_update() {
+        let octaves = Octaves::parse().value();
+        SHOW_OCTAVE.with(|e| e.set_max(format!("{octaves}").as_str()));
+    }
     fn generate_and_draw(settings: SimplexNoiseSettings) {
         let simplex = SimplexNoiseImpl::new(settings.seed.value());
 
-        let coloring = simplex.generate_coloring(&settings);
+        let visualization = simplex.generate_coloring(&settings);
 
-        draw_noise(&coloring);
+        draw_noise(&visualization);
 
         if settings.show_grid.value() {
             draw_grid(settings.scale.value(), "#000000");
@@ -264,7 +353,29 @@ impl SimplexNoise {
 }
 
 define_noise!(simplex,
-    sliders:[ (seed, u32, 42.), (scale, f64, 50.), (octaves, u32, 1.), (persistence, f64, 0.5)];
-    radios:[(coloring, full, dot_products, none)];
+    sliders:[
+        (seed, u32, 0., 42., 1000.),
+        (scale, f64, 10., 50., 200.),
+        (octaves, u32, 1., 1., 8.),
+        (lacunarity, f64, 1., 2., 4.),
+        (gain, f64, 0., 0.5, 1.),
+        (h_exponent, f64, 0., 1., 2.),
+        (ridge_offset, f64, 0., 1., 2.),
+        (warp_amount, f64, 0., 4.0, 10.),
+        (show_octave, u32, 1., 1., 8.)
+    ];
+    radios:[
+        (visualization, 
+            (final, hide: [show_octave]), 
+            (single_octave), 
+            (accumulated_octaves)
+        ),
+        (noise_type, 
+            (standard, hide: [ridge_offset, warp_amount]), 
+            (turbulence, hide:[h_exponent, ridge_offset, warp_amount]), 
+            (ridge, hide:[h_exponent, warp_amount]), 
+            (domain_warp, hide:[h_exponent, ridge_offset])
+        )
+    ];
     checkboxes:[show_grid, show_vectors];
 );
